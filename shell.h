@@ -35,6 +35,15 @@ void split_line_tokens(char *line, char **argv);
 void free_tokens(char **tokens);
 
 /** excute commands **/
-int execute_command(char **av, char *path. char **argv, char **env);
+int exec_command(char **av, char *path, char **argv, char **env);
 
+/** set and unset env **/
+void check_setenv(char **args);
+void check_unsetenv(char **args);
+
+char *pathFinder(char *argv);
+char *path_location(char *path, char *argv);
+char *my_getenv(const char *path);
+
+int builtin_cmd(char *line, char **argv);
 #endif

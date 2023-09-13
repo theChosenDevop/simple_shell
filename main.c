@@ -3,33 +3,50 @@
 /**
  * main - entry point
  * @ac: argument count
- * @av: argumet vector
+ * @av: argument vector
  * @env: environment variable
- * Return: 0 always
+ * Return: 0 Always
  */
 int main(int ac, char **av, char **env)
 {
-	ssize_t readinput = 0;
-	char *path = NULL, *lineptr = NULL, *argv[10];
+	ssize_t readLine;
+	size_t n = 0;
 	int mode = isatty(0);
+	char prompt[] = "#cisfun$ ", *path, *line = NULL, *argv[10];
 	(void)ac, (void)env;
 
 	signal(SIGINT, handle_signal);
 	while (1)
 	{
 		if (mode == 1)
-		{write(STDOUT_FILENO, "$ ", 2); }
-		readinput = getline(&lineptr, &n, stdin);
-		if (readinput == -1)
+		{write(STDOUT_FILENO, &prompt, 10); }
+		readLine = getline(&line, &n, stdin);
+		if (readLine == -1)
 		{
-			free(lineptr);
+			/*if (mode != 1)*/
+				/*write(STDOUT_FILENO, "\n", 1);*/
+			free(line);
 			exit(0);
 		}
-		lineptr[readinput - 1] = '\0';
-		split_line_tokens(lineptr, argv);
-		execute_command(av, path. argv, env);
+		line[readLine - 1] = '\0';
+		split_line_tokens(line, argv);
+		if (argv[0] == NULL)
+		{
+			continue;
+		}
+		if (builtin_cmd(line, argv) != 0)
+		{free_tokens(argv);
+			continue; }
+		else
+		{path = pathFinder(argv[0]);
+			if (path == NULL)
+			{perror(av[0]);
+				free_tokens(argv);
+				continue; }
+			exec_command(av, path, argv, env);
+		}
 		free_tokens(argv);
-		free(lineptr);
+		free(path);
 	}
 	return (0);
 }
@@ -51,16 +68,17 @@ void free_tokens(char **tokens)
 }
 
 /**
- * execute_command - execute user inputs as commands
- * @av: argument vector
- * @argv: argumet vector
- * @env: environment variable
+ * exec_command - execute command
+ * @av: input
+ * @path: input
+ * @argv: input
+ * @env: input
  * Return: 0 always
  */
-int execute_command(char **av, char *path. char **argv, char **env)
+int exec_command(char **av, char *path, char **argv, char **env)
 {
 	pid_t child_pid;
-	int status, val;
+	int status, ret;
 
 	status = 0;
 
@@ -72,16 +90,17 @@ int execute_command(char **av, char *path. char **argv, char **env)
 	}
 	else if (child_pid == 0)
 	{
-		val = execve(path, argv, env);
-		if (val == -1)
+		ret = execve(path, argv, env);
+		if (ret == -1)
 		{
-			perror("execve");
-			exit(127);
+			perror("test excev");
+			return (2);
 		}
 	}
 	else
 	{
 		wait(&status);
 	}
-	return (0);
+	return (127);
 }
+
